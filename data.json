@@ -50,13 +50,13 @@
   "min": 8.95,
   "max": 20,
   "wa": 80,
-  "vol": 34.5
+  "vol": 6
  },
  "repoMarket": {
   "min": 8.95,
   "max": 9.15,
   "wa": 9,
-  "vol": 129.78
+  "vol": 7
  },
  "windows": {
   "sdf": {
