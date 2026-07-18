@@ -952,7 +952,8 @@ function parseWorkbook(wb,XLSX){
     // (Auction Date, Settlement Date, Repo Offered, Rev.Repo Offered, Received, Accepted, Min%, Max%)
     {let ot=[];
      if(_omoHdrRow>=0){for(let i=_omoHdrRow+1;i<mm.length;i++){const row=mm[i];if(!row)continue;const dtx=xlDate(row[0]);if(!dtx)continue;
-       ot.push({auction:lbl(dtx),settlement:lbl(xlDate(row[1])),repoOffered:num(row[2]),revRepoOffered:num(row[3]),received:num(row[4]),accepted:num(row[5]),minRate:num(row[6]),maxRate:num(row[7]),show:true});}}
+       const matDtx=xlDate(row[9]);
+       ot.push({auction:lbl(dtx),settlement:lbl(xlDate(row[1])),repoOffered:num(row[2]),revRepoOffered:num(row[3]),received:num(row[4]),accepted:num(row[5]),minRate:num(row[6]),maxRate:num(row[7]),waYield:num(row[8]),maturity:matDtx?lbl(matDtx):(row[9]!=null?String(row[9]).trim():''),tenure:num(row[10]),show:true});}}
      o.omoTerm=ot;}
   }
   const fi=S(find('fixedincome')||'');
@@ -1033,7 +1034,7 @@ function parseWorkbook(wb,XLSX){
   if(gl.length){
     const ser=(dc,vc)=>{let L=[],V=[];for(let i=2;i<gl.length;i++)if(gl[i][dc]!=null&&gl[i][vc]!=null){L.push(lbl(gl[i][dc]));V.push(num(gl[i][vc]));}return{labels:L,values:V};};
     o.global10y=ser(0,1);o.wti=ser(3,4);o.brent=ser(3,5);o.murban=ser(7,8);o.dxy=ser(10,11);o.gold=ser(13,14);
-    let fomc=[];for(let i=2;i<gl.length;i++)if(gl[i][13]!=null)fomc.push({date:String(gl[i][13]).trim(),range:String(gl[i][14]).trim(),repo:pct(gl[i][15]),rrepo:pct(gl[i][16]),show:true});o.fomc=fomc;
+    let fomc=[];for(let i=2;i<gl.length;i++)if(gl[i][16]!=null)fomc.push({date:lbl(gl[i][16]),range:String(gl[i][17]).trim(),repo:pct(gl[i][18]),rrepo:pct(gl[i][19]),show:true});o.fomc=fomc;
   }
   const an=S(find('announcement')||'');
   if(an.length){try{
