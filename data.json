@@ -48,7 +48,7 @@
  ],
  "callMarket": {
   "min": 8.95,
-  "max": 9,
+  "max": 90,
   "wa": 8.95,
   "vol": 34.5
  },
@@ -6336,7 +6336,7 @@
   "Total Amount Accepted: Rs. 120.0 Billion",
   "Auction Date: 15 July 2026"
  ],
- "date": "2026-07-18",
+ "date": "2026-07-19",
  "openingDate": "",
  "closingDate": "",
  "mmDate": "",
