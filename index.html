@@ -37,26 +37,17 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#060f1e;color:#d4e4f4;mi
 .hdr-info h1{font-size:16px;font-weight:700;color:#fff}
 .hdr-info p{font-size:11px;color:#7fa3c8}
 .hdr-right{text-align:right}
-#update-banner{position:fixed;top:14px;right:14px;z-index:500;display:none;align-items:center;gap:10px;background:#0d2a3f;border:1.5px solid #3a7bb8;border-radius:8px;padding:8px 10px 8px 12px;box-shadow:0 6px 20px rgba(0,0,0,.5);max-width:min(320px,88vw)}
-#update-banner-text{font-size:11px;color:#8fc8f0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.update-banner-close{background:none;border:none;color:#8fc8f0;cursor:pointer;font-size:13px;line-height:1;padding:2px 4px;flex-shrink:0;opacity:.75}
-.update-banner-close:hover{opacity:1}
-@media (max-width:520px){#update-banner{top:8px;right:8px;padding:7px 8px 7px 10px}#update-banner-text{font-size:10px}}
-.notif-wrap{position:relative;display:inline-block;vertical-align:middle}
-.notif-btn{background:none;border:none;cursor:pointer;font-size:16px;line-height:1;padding:4px 6px;position:relative;filter:grayscale(0.3) opacity(0.85);transition:filter .15s}
-.notif-btn:hover{filter:none;opacity:1}
-.notif-dot{position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:#4caf50;border:1.5px solid #060f1e}
-.notif-drop{position:absolute;top:calc(100% + 8px);right:0;width:260px;background:#0d1e38;border:1.5px solid #2a4a70;border-radius:10px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:200;text-align:left}
-.notif-drop-title{color:#c8a84b;font-size:12px;font-weight:700;letter-spacing:.4px;margin-bottom:6px}
-.notif-drop-body{color:#9fbcd8;font-size:11px;line-height:1.5;margin-bottom:10px}
-.notif-drop-btn{width:100%;background:#c8a84b;color:#0a1628;border:none;border-radius:6px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;transition:background .2s}
-.notif-drop-btn:hover{background:#e0c060}
-.notif-drop-btn.is-on{background:#1a3050;color:#6dd4a0;border:1px solid #4caf50}
-.notif-drop-btn.is-on:hover{background:#20395c}
-.notif-drop-btn:disabled{opacity:.5;cursor:not-allowed}
-.notif-drop-status{font-size:10px;color:#7fa3c8;margin-top:8px;min-height:14px}
-.notif-drop-status.is-err{color:#e87a4d}
-@media (max-width:520px){.notif-drop{right:-8px;width:230px}}
+#msg-stack{position:fixed;top:14px;right:14px;z-index:500;display:flex;flex-direction:column;gap:8px;max-width:min(300px,88vw);pointer-events:none}
+.msg-card{display:flex;align-items:flex-start;gap:8px;background:#0d2a3f;border:1.5px solid #3a7bb8;border-radius:8px;padding:8px 10px 8px 12px;box-shadow:0 6px 20px rgba(0,0,0,.5);pointer-events:auto;animation:msgIn .2s ease}
+.msg-card.msg-today{border-color:#c8a84b;background:#2a2210}
+@keyframes msgIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.msg-card-body{display:flex;flex-direction:column;gap:1px;min-width:0}
+.msg-card-title{font-size:11px;color:#8fc8f0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-card.msg-today .msg-card-title{color:#e0c060}
+.msg-card-time{font-size:9.5px;color:#5f88ab;font-weight:500}
+.msg-card-close{background:none;border:none;color:#8fc8f0;cursor:pointer;font-size:13px;line-height:1;padding:2px 4px;flex-shrink:0;opacity:.75;margin-left:auto}
+.msg-card-close:hover{opacity:1}
+@media (max-width:520px){#msg-stack{top:8px;right:8px}.msg-card{padding:7px 8px 7px 10px}.msg-card-title{font-size:10px}.msg-card-time{font-size:9px}}
 .hdr-date{font-size:14px;color:#c8a84b;font-weight:700;margin-bottom:4px}
 .hdr-live{display:inline-block;background:#1a3a1a;border:1px solid #2a5a2a;color:#6dd4a0;border-radius:12px;padding:2px 10px;font-size:10px;font-weight:700;margin-right:8px}
 .sign-out{background:transparent;color:#7fa3c8;border:1px solid #1a3050;border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer}
@@ -298,10 +289,7 @@ canvas{max-width:100%!important}
 <body>
 
 <div id="dashboard">
-<div id="update-banner" style="display:none">
-  <span id="update-banner-text"></span>
-  <button class="update-banner-close" onclick="dismissUpdateBanner()" title="Dismiss" aria-label="Dismiss">✕</button>
-</div>
+<div id="msg-stack"></div>
 
   <div class="report-hdr">
     <div class="hdr-left">
@@ -312,17 +300,6 @@ canvas{max-width:100%!important}
       <div class="hdr-date" id="dateDisplay">—</div>
       <span class="hdr-live">LIVE</span>
       <span id="last-updated" style="font-size:10px;color:#7fa3c8;margin-right:8px"></span>
-      <div class="notif-wrap" id="notif-wrap">
-        <button class="notif-btn" id="notif-btn" onclick="toggleNotifDrop(event)" title="Notifications" aria-label="Notifications">
-          🔔<span class="notif-dot" id="notif-dot" style="display:none"></span>
-        </button>
-        <div class="notif-drop" id="notif-drop" style="display:none">
-          <div class="notif-drop-title">Market Update Alerts</div>
-          <div class="notif-drop-body" id="notif-drop-body">Get notified on this device whenever new market data is published — even if the dashboard is in another tab.</div>
-          <button class="notif-drop-btn" id="notif-drop-btn" onclick="onNotifButtonClick()">Enable Notifications</button>
-          <div class="notif-drop-status" id="notif-drop-status"></div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -1071,132 +1048,15 @@ function showUpdateToast(){
   _toastTimer=setTimeout(()=>{toast.classList.remove('show');},4000);
 }
 
-// ── Browser notifications for market data updates ──
-const NOTIF_PREF_KEY='mvs_notif_enabled';
-function notifSupported(){return 'Notification' in window;}
-function notifPrefOn(){return localStorage.getItem(NOTIF_PREF_KEY)==='1';}
-function setNotifPref(on){try{localStorage.setItem(NOTIF_PREF_KEY,on?'1':'0');}catch(e){}}
+// ── In-page update messages (top-right, small cards, auto-expire after 1 hour, dismissible) ──
+const MSG_STACK_KEY='mvs_msg_stack';
+const MSG_LAST_FULL_KEY='mvs_last_data_full';
+const MSG_TODAY_KEY='mvs_notified_today_events';
+const MSG_MAX_AGE_MS=3600000; // 1 hour
 
-function initNotifUI(){
-  const wrap=document.getElementById('notif-wrap');
-  if(!wrap)return;
-  if(!notifSupported()){wrap.style.display='none';return;}
-  updateNotifUI();
-}
-
-function updateNotifUI(){
-  const dot=document.getElementById('notif-dot');
-  const btn=document.getElementById('notif-drop-btn');
-  const status=document.getElementById('notif-drop-status');
-  const body=document.getElementById('notif-drop-body');
-  if(!btn)return;
-  const perm=Notification.permission; // "default" | "granted" | "denied"
-  const on=notifPrefOn()&&perm==='granted';
-  if(dot)dot.style.display=on?'block':'none';
-  status&&(status.className='notif-drop-status');
-  if(perm==='denied'){
-    btn.textContent='Blocked in Browser Settings';
-    btn.disabled=true;
-    btn.classList.remove('is-on');
-    status.textContent='Notifications are blocked for this site. Enable them in your browser\'s site settings to turn this on.';
-    status.classList.add('is-err');
-  }else if(on){
-    btn.textContent='Notifications On';
-    btn.disabled=false;
-    btn.classList.add('is-on');
-    status.textContent='You\'ll be alerted here when new data is published.';
-  }else{
-    btn.textContent='Enable Notifications';
-    btn.disabled=false;
-    btn.classList.remove('is-on');
-    status.textContent='';
-  }
-}
-
-async function onNotifButtonClick(){
-  const status=document.getElementById('notif-drop-status');
-  const perm=Notification.permission;
-  if(perm==='denied')return; // button is disabled in this state anyway
-  const currentlyOn=notifPrefOn()&&perm==='granted';
-  if(currentlyOn){
-    // Turn off — pure local preference, browser permission itself can't be revoked by us.
-    setNotifPref(false);
-    updateNotifUI();
-    return;
-  }
-  if(perm==='granted'){
-    setNotifPref(true);
-    updateNotifUI();
-    testNotification();
-    return;
-  }
-  // perm === "default" — ask the user
-  try{
-    const result=await Notification.requestPermission();
-    if(result==='granted'){
-      setNotifPref(true);
-      updateNotifUI();
-      testNotification();
-    }else{
-      setNotifPref(false);
-      updateNotifUI();
-      if(status){status.textContent='Permission not granted — notifications stayed off.';status.classList.add('is-err');}
-    }
-  }catch(e){
-    if(status){status.textContent='Could not request permission on this device.';status.classList.add('is-err');}
-  }
-}
-
-function testNotification(){
-  try{
-    const n=new Notification('MVS Dashboard',{body:'Notifications enabled ✓',tag:'mvs-notif-test',silent:true});
-    setTimeout(()=>n.close&&n.close(),4000);
-  }catch(e){}
-}
-
-function fireUpdateNotification(){
-  if(!notifSupported())return;
-  if(!(notifPrefOn()&&Notification.permission==='granted'))return;
-  const now=new Date();
-  const slNow=new Date(now.getTime()+330*60000);
-  const hh=String(slNow.getUTCHours()).padStart(2,'0');
-  const mm=String(slNow.getUTCMinutes()).padStart(2,'0');
-  try{
-    const n=new Notification('MVS Dashboard',{
-      body:'Market data has been updated · '+hh+':'+mm+' SL',
-      tag:'mvs-data-update',
-      renotify:true,
-      silent:false
-    });
-    n.onclick=()=>{try{window.focus();}catch(e){}n.close&&n.close();};
-  }catch(e){}
-}
-
-function toggleNotifDrop(evt){
-  evt&&evt.stopPropagation();
-  const drop=document.getElementById('notif-drop');
-  if(!drop)return;
-  const isOpen=drop.style.display!=='none';
-  drop.style.display=isOpen?'none':'block';
-  if(!isOpen)updateNotifUI();
-}
-document.addEventListener('click',(e)=>{
-  const wrap=document.getElementById('notif-wrap');
-  const drop=document.getElementById('notif-drop');
-  if(!wrap||!drop||drop.style.display==='none')return;
-  if(!wrap.contains(e.target))drop.style.display='none';
-});
-
-let _lastDataHash=null;
-let _lastNewsHash=null;
-const NOTIF_LAST_FULL_KEY='mvs_last_data_full';
-const NOTIF_LAST_UPDATE_AT_KEY='mvs_last_update_at';
-const NOTIF_LAST_DISMISSED_AT_KEY='mvs_last_update_dismissed_at';
-const NOTIF_TODAY_EVENT_KEY='mvs_notified_today_events';
-
-// Which published sections should trigger a notification when they change.
+// Which published sections should show an update message when they change.
 // Label -> list of top-level data.json keys that belong to that section.
-const NOTIF_SECTION_MAP={
+const MSG_SECTION_MAP={
   'Volume of Foreign Exchange Market':['fxSummary'],
   'Outright Treasury Bond Transaction Volumes (Rs.Mn)':['bondTransVol'],
   'Money & Repo Market':['callMarket','repoMarket','windows','liquidity'],
@@ -1213,41 +1073,85 @@ const NOTIF_SECTION_MAP={
 function computeChangedSections(oldObj,newObj){
   const changed=[];
   if(!oldObj||!newObj)return changed;
-  for(const label in NOTIF_SECTION_MAP){
-    const keys=NOTIF_SECTION_MAP[label];
+  for(const label in MSG_SECTION_MAP){
+    const keys=MSG_SECTION_MAP[label];
     const isDiff=keys.some(k=>JSON.stringify(oldObj[k])!==JSON.stringify(newObj[k]));
     if(isDiff)changed.push(label);
   }
   return changed;
 }
 
-function fireSectionNotifications(changedLabels){
-  if(!changedLabels||!changedLabels.length)return;
-  if(!notifSupported())return;
-  if(!(notifPrefOn()&&Notification.permission==='granted'))return;
-  const now=new Date();
-  const slNow=new Date(now.getTime()+330*60000);
-  const hh=String(slNow.getUTCHours()).padStart(2,'0');
-  const mm=String(slNow.getUTCMinutes()).padStart(2,'0');
-  const body=(changedLabels.length===1?changedLabels[0]:changedLabels.length+' sections updated: '+changedLabels.join(', '))+' · '+hh+':'+mm+' SL';
-  try{
-    const n=new Notification('MVS Dashboard — Data Updated',{body,tag:'mvs-section-update',renotify:true,silent:false});
-    n.onclick=()=>{try{window.focus();}catch(e){}n.close&&n.close();};
-  }catch(e){}
+function fmtMsgTime(ms){
+  const slNow=new Date(ms+330*60000);
+  const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const dd=slNow.getUTCDate(),mo=MON[slNow.getUTCMonth()];
+  const hh=String(slNow.getUTCHours()).padStart(2,'0'),mm=String(slNow.getUTCMinutes()).padStart(2,'0');
+  return dd+' '+mo+', '+hh+':'+mm+' SL';
 }
 
-// Separate check: notify once per day about any key event (auction, release, etc.) scheduled
-// for today, but only from 7:30 AM SL time onward — avoids waking people up about today's own events.
-function checkTodayEventNotification(d){
-  if(!notifSupported())return;
-  if(!(notifPrefOn()&&Notification.permission==='granted'))return;
+function readMsgStack(){
+  try{return JSON.parse(localStorage.getItem(MSG_STACK_KEY)||'[]');}catch(e){return [];}
+}
+function writeMsgStack(arr){
+  try{localStorage.setItem(MSG_STACK_KEY,JSON.stringify(arr));}catch(e){}
+}
+
+// Adds a new message to the stack (persisted) and renders it immediately.
+function pushMsg(label,isToday){
+  const stack=readMsgStack();
+  const id='m'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+  const entry={id,label,atMs:Date.now(),isToday:!!isToday};
+  stack.push(entry);
+  writeMsgStack(stack);
+  renderMsgCard(entry);
+}
+
+function renderMsgCard(entry){
+  const root=document.getElementById('msg-stack');
+  if(!root)return;
+  const remain=MSG_MAX_AGE_MS-(Date.now()-entry.atMs);
+  if(remain<=0)return;
+  const card=document.createElement('div');
+  card.className='msg-card'+(entry.isToday?' msg-today':'');
+  card.id='msgcard-'+entry.id;
+  card.innerHTML='<div class="msg-card-body"><span class="msg-card-title"></span><span class="msg-card-time"></span></div><button class="msg-card-close" title="Dismiss" aria-label="Dismiss">✕</button>';
+  card.querySelector('.msg-card-title').textContent=(entry.isToday?'Today: ':'')+entry.label;
+  card.querySelector('.msg-card-time').textContent=fmtMsgTime(entry.atMs);
+  card.querySelector('.msg-card-close').onclick=()=>dismissMsg(entry.id);
+  root.appendChild(card);
+  setTimeout(()=>{removeMsgFromDOM(entry.id);},remain);
+}
+
+function removeMsgFromDOM(id){
+  const el=document.getElementById('msgcard-'+id);
+  if(el&&el.parentNode)el.parentNode.removeChild(el);
+}
+
+function dismissMsg(id){
+  removeMsgFromDOM(id);
+  const stack=readMsgStack().filter(m=>m.id!==id);
+  writeMsgStack(stack);
+}
+
+// Called on every app open: purge expired messages, render whatever's left (< 1 hour old).
+function initMsgStack(){
+  const stack=readMsgStack();
+  const now=Date.now();
+  const kept=stack.filter(m=>(now-m.atMs)<MSG_MAX_AGE_MS);
+  writeMsgStack(kept);
+  kept.forEach(renderMsgCard);
+}
+
+// Separate check: show a message once per day about any key event (auction, release, etc.)
+// scheduled for today, but only from 7:30 AM SL time onward.
+function checkTodayEventMessages(d){
   const now=new Date();
   const slNow=new Date(now.getTime()+330*60000);
   const slHours=slNow.getUTCHours()+slNow.getUTCMinutes()/60;
   if(slHours<7.5)return; // before 7:30 AM SL — skip
   const todayKey=slNow.getUTCFullYear()+'-'+String(slNow.getUTCMonth()+1).padStart(2,'0')+'-'+String(slNow.getUTCDate()).padStart(2,'0');
   let notifiedMap={};
-  try{notifiedMap=JSON.parse(localStorage.getItem(NOTIF_TODAY_EVENT_KEY)||'{}');}catch(e){notifiedMap={};}
+  try{notifiedMap=JSON.parse(localStorage.getItem(MSG_TODAY_KEY)||'{}');}catch(e){notifiedMap={};}
   const events=getKeyEvents(d)||[];
   events.forEach(ev=>{
     const dt=parseEventDate(ev.date);
@@ -1255,66 +1159,18 @@ function checkTodayEventNotification(d){
     const evKey=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
     if(evKey!==todayKey)return; // only today's events
     const dedupeKey=todayKey+'::'+ev.label;
-    if(notifiedMap[dedupeKey])return; // already notified today
-    try{
-      const n=new Notification('MVS Dashboard — Today',{body:ev.label,tag:'mvs-today-'+dedupeKey,silent:false});
-      n.onclick=()=>{try{window.focus();}catch(e){}n.close&&n.close();};
-    }catch(e){}
+    if(notifiedMap[dedupeKey])return; // already shown today
+    pushMsg(ev.label,true);
     notifiedMap[dedupeKey]=true;
   });
-  // trim old dates out of the stored map so it doesn't grow forever
   const trimmed={};
   Object.keys(notifiedMap).forEach(k=>{if(k.indexOf(todayKey+'::')===0)trimmed[k]=true;});
-  try{localStorage.setItem(NOTIF_TODAY_EVENT_KEY,JSON.stringify(trimmed));}catch(e){}
+  try{localStorage.setItem(MSG_TODAY_KEY,JSON.stringify(trimmed));}catch(e){}
 }
 
-function cheapHash(str){
-  // Fast, small, non-cryptographic hash — just enough to detect "data changed" across reloads.
-  let h=0;
-  for(let i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))|0;}
-  return String(h);
-}
 
-// ── "Recently updated" banner (top-right, auto-hides after 1 hour, closable) ──
-let _updateBannerTimer=null;
-function fmtBannerTime(ms){
-  const slNow=new Date(ms+330*60000);
-  const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const dd=slNow.getUTCDate(),mo=MON[slNow.getUTCMonth()];
-  const hh=String(slNow.getUTCHours()).padStart(2,'0'),mm=String(slNow.getUTCMinutes()).padStart(2,'0');
-  return dd+' '+mo+', '+hh+':'+mm+' SL';
-}
-function showUpdateBanner(atMs){
-  const el=document.getElementById('update-banner');
-  const txt=document.getElementById('update-banner-text');
-  if(!el||!txt)return;
-  const remain=3600000-(Date.now()-atMs);
-  if(remain<=0){el.style.display='none';return;}
-  txt.textContent='Updated · '+fmtBannerTime(atMs);
-  el.style.display='flex';
-  clearTimeout(_updateBannerTimer);
-  _updateBannerTimer=setTimeout(()=>{el.style.display='none';},remain);
-}
-function dismissUpdateBanner(){
-  const el=document.getElementById('update-banner');
-  if(el)el.style.display='none';
-  clearTimeout(_updateBannerTimer);
-  try{
-    const at=localStorage.getItem(NOTIF_LAST_UPDATE_AT_KEY);
-    if(at)localStorage.setItem(NOTIF_LAST_DISMISSED_AT_KEY,at);
-  }catch(e){}
-}
-function initUpdateBanner(){
-  let at=null,dismissedAt=null;
-  try{
-    at=localStorage.getItem(NOTIF_LAST_UPDATE_AT_KEY);
-    dismissedAt=localStorage.getItem(NOTIF_LAST_DISMISSED_AT_KEY);
-  }catch(e){}
-  if(!at)return;
-  if(dismissedAt===at)return; // user already closed this one
-  showUpdateBanner(+at);
-}
-
+let _lastDataHash=null;
+let _lastNewsHash=null;
 async function loadData(silent=false){
   const bar=document.getElementById("loading-bar"),errEl=document.getElementById("load-err");
   if(!silent){bar.style.display="block";errEl.style.display="none";}
@@ -1330,28 +1186,21 @@ async function loadData(silent=false){
     const newObj=JSON.parse(txt);
     render(newObj);
     // Backgrounded tabs can get fully discarded by the browser to save memory/battery — when the
-    // user returns, this reloads the page from scratch and wipes the in-memory value above, which
-    // would otherwise make a real missed update look like "first load" and silently skip notifying.
-    // Persisting the full previous data to localStorage lets a fresh reload tell those two cases
-    // apart, and also lets us diff section-by-section to know exactly what changed.
+    // user returns, this reloads the page from scratch and would otherwise make a real missed
+    // update look like "first load". Persisting the full previous data to localStorage lets a
+    // fresh reload tell those two cases apart, and also lets us diff section-by-section.
     let storedFull=null;
-    try{storedFull=localStorage.getItem(NOTIF_LAST_FULL_KEY);}catch(e){}
+    try{storedFull=localStorage.getItem(MSG_LAST_FULL_KEY);}catch(e){}
     const isGenuinelyNewDevice=storedFull===null;
     if(!isGenuinelyNewDevice&&storedFull!==txt){
-      const nowMs=Date.now();
       try{
         const oldObj=JSON.parse(storedFull);
         const changed=computeChangedSections(oldObj,newObj);
-        fireSectionNotifications(changed);
+        changed.forEach(label=>pushMsg(label,false));
       }catch(e){}
-      try{
-        localStorage.setItem(NOTIF_LAST_UPDATE_AT_KEY,String(nowMs));
-        localStorage.removeItem(NOTIF_LAST_DISMISSED_AT_KEY);
-      }catch(e){}
-      showUpdateBanner(nowMs);
     }
-    try{localStorage.setItem(NOTIF_LAST_FULL_KEY,txt);}catch(e){}
-    checkTodayEventNotification(newObj);
+    try{localStorage.setItem(MSG_LAST_FULL_KEY,txt);}catch(e){}
+    checkTodayEventMessages(newObj);
   }catch(e){
     bar.style.display="none";
     if(!silent){errEl.style.display="block";errEl.textContent="Could not load data — "+e.message;}
@@ -2196,8 +2045,7 @@ function buildCharts(d){
 }
 
 // no login required — load immediately
-initNotifUI();
-initUpdateBanner();
+initMsgStack();
 loadData();
 startPolling();
 // When the tab/app comes back into view (phone unlocked, tab refocused, browser un-minimized after
